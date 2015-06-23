@@ -31,7 +31,7 @@ import org.fcrepo.kernel.impl.utils.infinispan.CacheLoaderChunkInputStream;
 import org.fcrepo.kernel.utils.ContentDigest;
 import org.fcrepo.kernel.utils.FixityResult;
 import org.infinispan.Cache;
-import org.infinispan.CacheImpl;
+import org.infinispan.cache.impl.CacheImpl;
 import org.infinispan.distexec.DistributedCallable;
 import org.infinispan.persistence.manager.PersistenceManager;
 import org.infinispan.persistence.spi.CacheLoader;
