@@ -15,7 +15,7 @@
  */
 package org.fcrepo.http.api;
 
-import static com.google.common.collect.Iterables.any;
+import static com.google.common.base.Predicates.containsPattern;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.transform;
 
@@ -99,7 +99,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -367,8 +366,12 @@ public class FedoraLdpTest {
 
         final RdfStream entity = (RdfStream) actual.getEntity();
         final Model model = entity.asModel();
+<<<<<<< HEAD
         final List<String> rdfNodes = Lists.transform(Lists.newArrayList(model.listObjects()), x -> x.toString());
 
+=======
+        final List<String> rdfNodes = transform(newArrayList(model.listObjects()), RDFNode::toString);
+>>>>>>> Fix for FCREPO-1640
         assertTrue("Expected RDF contexts missing", rdfNodes.containsAll(ImmutableSet.of(
                 "class org.fcrepo.kernel.modeshape.rdf.impl.LdpContainerRdfContext",
                 "class org.fcrepo.kernel.modeshape.rdf.impl.LdpIsMemberOfRdfContext",
@@ -392,7 +395,8 @@ public class FedoraLdpTest {
 
         final RdfStream entity = (RdfStream) actual.getEntity();
         final Model model = entity.asModel();
-        final List<String> rdfNodes = Lists.transform(Lists.newArrayList(model.listObjects()), x -> x.toString());
+
+        final List<String> rdfNodes = transform(newArrayList(model.listObjects()), RDFNode::toString);
         assertTrue("Expected RDF contexts missing", rdfNodes.containsAll(ImmutableSet.of(
                 "class org.fcrepo.kernel.modeshape.rdf.impl.LdpContainerRdfContext",
                 "class org.fcrepo.kernel.modeshape.rdf.impl.LdpIsMemberOfRdfContext",
@@ -447,7 +451,8 @@ public class FedoraLdpTest {
 
         final RdfStream entity = (RdfStream) actual.getEntity();
         final Model model = entity.asModel();
-        final List<String> rdfNodes = Lists.transform(Lists.newArrayList(model.listObjects()), x -> x.toString());
+        final List<String> rdfNodes = transform(newArrayList(model.listObjects()), RDFNode::toString);
+
         assertTrue("Expected RDF contexts missing", rdfNodes.containsAll(ImmutableSet.of(
                 "class org.fcrepo.kernel.modeshape.rdf.impl.TypeRdfContext",
                 "class org.fcrepo.kernel.modeshape.rdf.impl.PropertiesRdfContext"
@@ -472,7 +477,8 @@ public class FedoraLdpTest {
 
         final RdfStream entity = (RdfStream) actual.getEntity();
         final Model model = entity.asModel();
-        final List<String> rdfNodes = Lists.transform(Lists.newArrayList(model.listObjects()), x -> x.toString());
+
+        final List<String> rdfNodes = transform(newArrayList(model.listObjects()), RDFNode::toString);
         assertTrue("Should include membership contexts",
                 rdfNodes.contains("class org.fcrepo.kernel.modeshape.rdf.impl.LdpContainerRdfContext"));
 
@@ -491,7 +497,8 @@ public class FedoraLdpTest {
 
         final RdfStream entity = (RdfStream) actual.getEntity();
         final Model model = entity.asModel();
-        final List<String> rdfNodes = Lists.transform(Lists.newArrayList(model.listObjects()), x -> x.toString());
+        final List<String> rdfNodes = transform(newArrayList(model.listObjects()), RDFNode::toString);
+
         assertFalse("Should not include membership contexts",
                 rdfNodes.contains("class org.fcrepo.kernel.modeshape.rdf.impl.LdpContainerRdfContext"));
         assertFalse("Should not include membership contexts",
@@ -511,10 +518,11 @@ public class FedoraLdpTest {
 
         final RdfStream entity = (RdfStream) actual.getEntity();
         final Model model = entity.asModel();
-        final List<String> rdfNodes = transform(newArrayList(model.listObjects()), x -> x.toString());
+        final List<String> rdfNodes = transform(newArrayList(model.listObjects()), RDFNode::toString);
         log.debug("Received RDF nodes: {}", rdfNodes);
         final String referencesContextClassName = ReferencesRdfContext.class.getName();
-        assertTrue("Should include references contexts", any(rdfNodes, x -> x.contains(referencesContextClassName)));
+        assertTrue("Should include references contexts",
+                rdfNodes.stream().anyMatch(containsPattern(referencesContextClassName)::apply));
     }
 
     @Test
@@ -552,8 +560,7 @@ public class FedoraLdpTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
-    public void testGetWithBinaryDescription() throws Exception {
+    public void testGetWithBinaryDescription() throws RepositoryException, IOException {
         final NonRdfSourceDescription mockResource
                 = (NonRdfSourceDescription)setResource(NonRdfSourceDescription.class);
         when(mockResource.getDescribedResource()).thenReturn(mockBinary);
@@ -570,9 +577,10 @@ public class FedoraLdpTest {
                 mockResponse.getHeaders("Link")
                         .contains("<" + idTranslator.toDomain(binaryPath) + ">; rel=\"describes\""));
 
-        final RdfStream entity = (RdfStream) actual.getEntity();
-        final Model model = entity.asModel();
-        final List<String> rdfNodes = Lists.transform(Lists.newArrayList(model.listObjects()), x -> x.toString());
+        final Model model = ((RdfStream) actual.getEntity()).asModel();
+        final List<String> rdfNodes = transform(newArrayList(model.listObjects()), RDFNode::toString);
+        log.info("Found RDF objects\n{}", rdfNodes);
+
         assertTrue("Expected RDF contexts missing", rdfNodes.containsAll(ImmutableSet.of(
                 "class org.fcrepo.kernel.modeshape.rdf.impl.LdpContainerRdfContext",
                 "class org.fcrepo.kernel.modeshape.rdf.impl.LdpIsMemberOfRdfContext",
@@ -581,8 +589,7 @@ public class FedoraLdpTest {
                 "class org.fcrepo.kernel.modeshape.rdf.impl.PropertiesRdfContext",
                 "class org.fcrepo.kernel.modeshape.rdf.impl.ChildrenRdfContext",
                 "class org.fcrepo.kernel.modeshape.rdf.impl.AclRdfContext",
-                "class org.fcrepo.kernel.modeshape.rdf.impl.ParentRdfContext",
-                "child:properties"
+                "class org.fcrepo.kernel.modeshape.rdf.impl.ParentRdfContext"
         )));
 
     }
