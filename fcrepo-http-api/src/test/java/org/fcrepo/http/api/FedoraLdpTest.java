@@ -79,6 +79,7 @@ import javax.ws.rs.core.UriBuilder;
 import org.apache.commons.io.IOUtils;
 import org.fcrepo.http.commons.api.rdf.HttpResourceConverter;
 import org.fcrepo.http.commons.domain.MultiPrefer;
+import org.fcrepo.kernel.api.exception.MalformedRdfException;
 import org.fcrepo.kernel.api.identifiers.IdentifierConverter;
 import org.fcrepo.kernel.api.models.Container;
 import org.fcrepo.kernel.api.models.FedoraBinary;
@@ -101,6 +102,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 /**
@@ -194,7 +196,6 @@ public class FedoraLdpTest {
         when(mockHeaders.getHeaderString("user-agent")).thenReturn("Test UserAgent");
     }
 
-    @SuppressWarnings("unchecked")
     private FedoraResource setResource(final Class<? extends FedoraResource> klass) throws RepositoryException {
         final FedoraResource mockResource = mock(klass);
 
@@ -366,12 +367,8 @@ public class FedoraLdpTest {
 
         final RdfStream entity = (RdfStream) actual.getEntity();
         final Model model = entity.asModel();
-<<<<<<< HEAD
-        final List<String> rdfNodes = Lists.transform(Lists.newArrayList(model.listObjects()), x -> x.toString());
-
-=======
         final List<String> rdfNodes = transform(newArrayList(model.listObjects()), RDFNode::toString);
->>>>>>> Fix for FCREPO-1640
+
         assertTrue("Expected RDF contexts missing", rdfNodes.containsAll(ImmutableSet.of(
                 "class org.fcrepo.kernel.modeshape.rdf.impl.LdpContainerRdfContext",
                 "class org.fcrepo.kernel.modeshape.rdf.impl.LdpIsMemberOfRdfContext",
@@ -694,8 +691,7 @@ public class FedoraLdpTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
-    public void testPatchBinaryDescription() throws Exception {
+    public void testPatchBinaryDescription() throws RepositoryException, MalformedRdfException, IOException {
 
         final NonRdfSourceDescription mockObject = (NonRdfSourceDescription)setResource(NonRdfSourceDescription.class);
         when(mockObject.getDescribedResource()).thenReturn(mockBinary);

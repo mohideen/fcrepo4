@@ -208,7 +208,7 @@ public abstract class ContentExposingResource extends FedoraBaseResource {
         final RdfStream rdfStream = new RdfStream();
 
         final Predicate<Triple> tripleFilter = ldpPreferences.prefersServerManaged() ? x -> true :
-            IS_MANAGED_TYPE.or(isManagedTriple::apply).negate();
+            IS_MANAGED_TYPE.or(isManagedTriple::test).negate();
 
         if (ldpPreferences.prefersServerManaged()) {
             rdfStream.concat(getTriples(LdpRdfContext.class));
