@@ -70,6 +70,8 @@ import static org.mockito.Mockito.when;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -81,9 +83,8 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.core.EntityTag;
@@ -95,7 +96,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
@@ -134,9 +134,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.springframework.mock.web.MockHttpServletResponse;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * @author cabeer
@@ -587,7 +584,7 @@ public class FedoraLdpTest {
             testObj.evaluateRequestPreconditions(mockRequest, mockResponse, testObj.resource(),
                     mockSession, true);
             fail("Expected " + PreconditionException.class.getName() + " to be thrown.");
-        } catch (PreconditionException e) {
+        } catch (final PreconditionException e) {
             // expected
         }
 
@@ -627,7 +624,7 @@ public class FedoraLdpTest {
             testObj.evaluateRequestPreconditions(mockRequest, mockResponse, testObj.resource(),
                     mockSession, true);
             fail("Expected " + PreconditionException.class.getName() + " to be thrown.");
-        } catch (PreconditionException e) {
+        } catch (final PreconditionException e) {
             // expected
         }
 
@@ -779,6 +776,7 @@ public class FedoraLdpTest {
 
         when(mockNodeService.exists(mockFedoraSession, "/some/path")).thenReturn(false);
         when(mockContainerService.findOrCreate(mockFedoraSession, "/some/path")).thenReturn(mockContainer);
+        when(mockContainerService.findOrCreate(mockFedoraSession, "/some/path", null)).thenReturn(mockContainer);
 
         final Response actual = testObj.createOrReplaceObjectRdf(null, null, null, null, null, null);
 
@@ -801,6 +799,7 @@ public class FedoraLdpTest {
 
         when(mockNodeService.exists(mockFedoraSession, "/some/path")).thenReturn(false);
         when(mockContainerService.findOrCreate(mockFedoraSession, "/some/path")).thenReturn(mockContainer);
+        when(mockContainerService.findOrCreate(mockFedoraSession, "/some/path", null)).thenReturn(mockContainer);
 
         final Response actual = testObj.createOrReplaceObjectRdf(NTRIPLES_TYPE,
                 toInputStream("_:a <info:x> _:c .", UTF_8), null, null, null, null);
@@ -818,6 +817,7 @@ public class FedoraLdpTest {
 
         when(mockNodeService.exists(mockFedoraSession, "/some/path")).thenReturn(false);
         when(mockBinaryService.findOrCreate(mockFedoraSession, "/some/path")).thenReturn(mockBinary);
+        when(mockBinaryService.findOrCreate(mockFedoraSession, "/some/path", null)).thenReturn(mockBinary);
 
         final Response actual = testObj.createOrReplaceObjectRdf(TEXT_PLAIN_TYPE,
                 toInputStream("xyz", UTF_8), null, null, nonRDFSourceLink, null);
@@ -835,6 +835,7 @@ public class FedoraLdpTest {
 
         when(mockNodeService.exists(mockFedoraSession, "/some/path")).thenReturn(true);
         when(mockContainerService.findOrCreate(mockFedoraSession, "/some/path")).thenReturn(mockObject);
+        when(mockContainerService.findOrCreate(mockFedoraSession, "/some/path", null)).thenReturn(mockObject);
 
         final Response actual = testObj.createOrReplaceObjectRdf(NTRIPLES_TYPE,
                 toInputStream("_:a <info:x> _:c .", UTF_8), null, null, null, null);
@@ -909,6 +910,7 @@ public class FedoraLdpTest {
            IOException, UnsupportedAlgorithmException, ParseException {
         setResource(Container.class);
         when(mockContainerService.findOrCreate(mockFedoraSession, "/b")).thenReturn(mockContainer);
+        when(mockContainerService.findOrCreate(mockFedoraSession, "/b", null)).thenReturn(mockContainer);
         final Response actual = testObj.createObject(null, null, "b", null, null, null, null);
         assertEquals(CREATED.getStatusCode(), actual.getStatus());
     }
@@ -918,6 +920,7 @@ public class FedoraLdpTest {
            InvalidChecksumException, UnsupportedAlgorithmException, ParseException, IOException {
         setResource(Container.class);
         when(mockContainerService.findOrCreate(mockFedoraSession, "/b")).thenReturn(mockContainer);
+        when(mockContainerService.findOrCreate(mockFedoraSession, "/b", null)).thenReturn(mockContainer);
         final Response actual = testObj.createObject(null,
                 MediaType.valueOf(contentTypeSPARQLUpdate), "b", toInputStream("x", UTF_8), null, null, null);
         assertEquals(CREATED.getStatusCode(), actual.getStatus());
@@ -929,6 +932,7 @@ public class FedoraLdpTest {
            InvalidChecksumException, IOException, UnsupportedAlgorithmException, ParseException {
         setResource(Container.class);
         when(mockContainerService.findOrCreate(mockFedoraSession, "/b")).thenReturn(mockContainer);
+        when(mockContainerService.findOrCreate(mockFedoraSession, "/b", null)).thenReturn(mockContainer);
         final Response actual = testObj.createObject(null, NTRIPLES_TYPE, "b",
                 toInputStream("_:a <info:b> _:c .", UTF_8), null, null, null);
         assertEquals(CREATED.getStatusCode(), actual.getStatus());
@@ -940,6 +944,7 @@ public class FedoraLdpTest {
            IOException, UnsupportedAlgorithmException, ParseException {
         setResource(Container.class);
         when(mockBinaryService.findOrCreate(mockFedoraSession, "/b")).thenReturn(mockBinary);
+        when(mockBinaryService.findOrCreate(mockFedoraSession, "/b", null)).thenReturn(mockBinary);
         try (final InputStream content = toInputStream("x", UTF_8)) {
             final Response actual = testObj.createObject(null, APPLICATION_OCTET_STREAM_TYPE, "b", content,
                 nonRDFSourceLink, null, null);
@@ -953,6 +958,7 @@ public class FedoraLdpTest {
            InvalidChecksumException, IOException, UnsupportedAlgorithmException, ParseException {
         setResource(Container.class);
         when(mockBinaryService.findOrCreate(mockFedoraSession, "/b")).thenReturn(mockBinary);
+        when(mockBinaryService.findOrCreate(mockFedoraSession, "/b", null)).thenReturn(mockBinary);
 
 
         try (final InputStream content = toInputStream("x", UTF_8)) {
@@ -975,6 +981,7 @@ public class FedoraLdpTest {
 
         setResource(Container.class);
         when(mockBinaryService.findOrCreate(mockFedoraSession, "/b")).thenReturn(mockBinary);
+        when(mockBinaryService.findOrCreate(mockFedoraSession, "/b", null)).thenReturn(mockBinary);
         try (final InputStream content = toInputStream("x", UTF_8)) {
             final MediaType requestContentType = MediaType.valueOf("some/mime-type; with=some; param=s");
             final Response actual = testObj.createObject(null, requestContentType, "b", content, nonRDFSourceLink,
@@ -990,6 +997,7 @@ public class FedoraLdpTest {
 
         setResource(Container.class);
         when(mockBinaryService.findOrCreate(mockFedoraSession, "/b")).thenReturn(mockBinary);
+        when(mockBinaryService.findOrCreate(mockFedoraSession, "/b", null)).thenReturn(mockBinary);
         try (final InputStream content = toInputStream("x", UTF_8)) {
             final MediaType requestContentType = MediaType.valueOf("some/mime-type; with=some; param=s");
             final String sha = "07a4d371f3b7b6283a8e1230b7ec6764f8287bf2";
@@ -1008,6 +1016,7 @@ public class FedoraLdpTest {
 
         setResource(Container.class);
         when(mockBinaryService.findOrCreate(mockFedoraSession, "/b")).thenReturn(mockBinary);
+        when(mockBinaryService.findOrCreate(mockFedoraSession, "/b", null)).thenReturn(mockBinary);
         try (final InputStream content = toInputStream("x", UTF_8)) {
             final MediaType requestContentType = MediaType.valueOf("some/mime-type; with=some; param=s");
             final String md5 = "HUXZLQLMuI/KZ5KDcJPcOA==";
@@ -1026,6 +1035,7 @@ public class FedoraLdpTest {
 
         setResource(Container.class);
         when(mockBinaryService.findOrCreate(mockFedoraSession, "/b")).thenReturn(mockBinary);
+        when(mockBinaryService.findOrCreate(mockFedoraSession, "/b", null)).thenReturn(mockBinary);
         try (final InputStream content = toInputStream("x", UTF_8)) {
             final MediaType requestContentType = MediaType.valueOf("some/mime-type; with=some; param=s");
 
